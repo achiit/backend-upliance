@@ -1,0 +1,31 @@
+{
+  "name": "upliance",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^22.10.0",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "scripts": {
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts",
+    "seed:categories": "bun run src/scripts/seedCategories.ts"
+
+  },
+  "dependencies": {
+    "@types/express": "^5.0.0",
+    "chalk": "^5.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "mysql2": "^3.11.4",
+    "sequelize": "^6.37.5"
+  }
+}
