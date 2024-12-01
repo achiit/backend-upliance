@@ -9,7 +9,22 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'cooking_game',
-  logging: false
+  logging: false,
+  port:3306
+  // dialect: 'mysql',
+  // host: "database-1.cynyudqupy3f.us-east-2.rds.amazonaws.com",
+  // username: 'root',
+  // password: 'password',
+  // database: "cooking_game",
+  // logging: false,
+  // port:3306,
+  // pool: {
+  //   max: 155,
+  //   min: 55,
+  //   idle: 200000000,
+  //   evict: 150000000,
+  //   acquire: 300000000
+  // },
 });
 
 export default sequelize;
