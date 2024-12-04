@@ -139,7 +139,7 @@
 //   }
 // }
 
-import { Badge, BadgeSubtask } from '../models';
+import { Badge, BadgeSubtask, RecipeCategory, UserProgress } from '../models';
 import { Transaction } from 'sequelize';
 import { RequirementRule } from '../models/BadgeSubtask';
 
@@ -196,4 +196,23 @@ export class BadgeService {
       throw error;
     }
   }
+  async getAllBadges() {
+    return Badge.findAll({
+      include: [BadgeSubtask],
+      order: [['createdAt', 'DESC']]
+    });
+  }
+
+  async getBadgeById(id: string) {
+    const badge = await Badge.findByPk(id, {
+      include: [BadgeSubtask]
+    });
+
+    if (!badge) {
+      throw new Error('Badge not found');
+    }
+
+    return badge;
+  }
+
 }
