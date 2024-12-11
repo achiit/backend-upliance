@@ -15,7 +15,8 @@
     "start": "bun src/index.ts",
     "dev": "bun --watch src/index.ts",
     "build": "bun build src/index.ts",
-    "seed:categories": "bun run src/scripts/seedCategories.ts"
+    "seed:categories": "bun run src/scripts/seedCategories.ts",
+    "migrate": "bun run src/config/migrations.ts"
 
   },
   "dependencies": {

@@ -29,6 +29,8 @@ import { BadgeSubtask } from './BadgeSubtask';
 import { UserProgress } from './UserProgress';
 import { User } from './User';
 import { RecipeCategory } from './Category';
+import { UserStreak } from './UserStreak';
+
 
 // Define relationships
 Badge.hasMany(BadgeSubtask, { foreignKey: 'badgeId' });
@@ -45,5 +47,6 @@ export {
   Badge,
   BadgeSubtask,
   UserProgress,
-  RecipeCategory
+  RecipeCategory,
+  UserStreak
 };

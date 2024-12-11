@@ -203,14 +203,23 @@ export class BadgeService {
     });
   }
 
-  async getBadgeById(id: string) {
-    const badge = await Badge.findByPk(id, {
-      include: [BadgeSubtask]
+  async getActiveBadges() {
+    return Badge.findAll({
+      where: { isActive: true },
+      include: [BadgeSubtask],
+      order: [['createdAt', 'DESC']]
     });
+  }
 
+  async toggleBadgeStatus(badgeId: string) {
+    const badge = await Badge.findByPk(badgeId);
     if (!badge) {
       throw new Error('Badge not found');
     }
+
+    await badge.update({
+      isActive: !badge.get('isActive')
+    });
 
     return badge;
   }
