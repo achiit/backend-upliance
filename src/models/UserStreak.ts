@@ -74,8 +74,14 @@ UserStreak.init(
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID, // Changed to match User.id
       allowNull: false,
+      references: {
+        model: 'users', // The table name for the User model
+        key: 'id',
+      },
+      onDelete: 'CASCADE', // Cascade delete when the referenced user is deleted
+      onUpdate: 'CASCADE', // Update foreign key on referenced key changes
     },
     currentStreak: {
       type: DataTypes.INTEGER,
@@ -84,11 +90,11 @@ UserStreak.init(
     },
     lastSessionDate: {
       type: DataTypes.DATE,
-      allowNull: true, // Null when no session has been logged yet
+      allowNull: true,
     },
     streakFreezes: {
       type: DataTypes.INTEGER,
-      defaultValue: 5, // Initial default freezes
+      defaultValue: 5,
       allowNull: false,
     },
     longestStreak: {
@@ -98,17 +104,17 @@ UserStreak.init(
     },
     dailyTaskCompleted: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false, // Default to incomplete
+      defaultValue: false,
       allowNull: false,
     },
     lastDailyReset: {
       type: DataTypes.DATE,
-      allowNull: true, // Tracks the last daily reset time
+      allowNull: true,
     },
   },
   {
-    sequelize, // The Sequelize instance
-    tableName: 'user_streaks', // Corresponding table name
+    sequelize,
+    tableName: 'user_streaks',
   }
 );
 
