@@ -5,6 +5,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2"
   },
@@ -15,8 +16,9 @@
     "start": "bun src/index.ts",
     "dev": "bun --watch src/index.ts",
     "build": "bun build src/index.ts",
-    "seed:categories": "bun run src/scripts/seedCategories.ts"
-
+    "seed:categories": "bun run src/scripts/seedCategories.ts",
+    "seed:users": "bun run src/scripts/seedUsers.ts",
+    "migrate": "bun run src/config/migrations.ts"
   },
   "dependencies": {
     "@types/express": "^5.0.0",
@@ -26,6 +28,7 @@
     "express": "^4.21.1",
     "helmet": "^8.0.0",
     "mysql2": "^3.11.4",
+    "node-cron": "^3.0.3",
     "sequelize": "^6.37.5"
   }
 }

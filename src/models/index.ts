@@ -29,6 +29,8 @@ import { BadgeSubtask } from './BadgeSubtask';
 import { UserProgress } from './UserProgress';
 import { User } from './User';
 import { RecipeCategory } from './Category';
+import { UserStreak } from './UserStreak';
+
 
 // Define relationships
 Badge.hasMany(BadgeSubtask, { foreignKey: 'badgeId' });
@@ -39,11 +41,17 @@ UserProgress.belongsTo(BadgeSubtask, { foreignKey: 'subtaskId' });
 
 User.hasMany(UserProgress, { foreignKey: 'userId' });
 UserProgress.belongsTo(User, { foreignKey: 'userId' });
+// In User model
+User.hasOne(UserStreak, { foreignKey: 'userId', as: 'streak' });
+
+// In UserStreak model
+UserStreak.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 export {
   User,
   Badge,
   BadgeSubtask,
   UserProgress,
-  RecipeCategory
+  RecipeCategory,
+  UserStreak
 };

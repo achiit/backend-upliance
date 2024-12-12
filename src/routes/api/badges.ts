@@ -26,19 +26,26 @@ router.get('/', async (req, res, next) => {
     next(error);
   }
 })
-router.get('/:badgeId/progress/:userId', async (req, res, next) => {
+router.get('/active', async (req, res, next) => {
   try {
-    const progress = await badgeService.getBadgeProgress(
-      req.params.userId,
-      req.params.badgeId
-    );
+    const badges = await badgeService.getActiveBadges();
     res.json({
       status: 'success',
-      data: progress
+      data: badges
     });
   } catch (error) {
     next(error);
   }
 });
-
+router.patch('/:badgeId/toggle', async (req, res, next) => {
+  try {
+    const badge = await badgeService.toggleBadgeStatus(req.params.badgeId);
+    res.json({
+      status: 'success',
+      data: badge
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 export { router as badgeRoutes };
