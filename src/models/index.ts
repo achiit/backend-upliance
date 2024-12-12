@@ -41,6 +41,11 @@ UserProgress.belongsTo(BadgeSubtask, { foreignKey: 'subtaskId' });
 
 User.hasMany(UserProgress, { foreignKey: 'userId' });
 UserProgress.belongsTo(User, { foreignKey: 'userId' });
+// In User model
+User.hasOne(UserStreak, { foreignKey: 'userId', as: 'streak' });
+
+// In UserStreak model
+UserStreak.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 export {
   User,

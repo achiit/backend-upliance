@@ -193,6 +193,7 @@
 import { Transaction } from 'sequelize';
 import { Badge, BadgeSubtask, UserProgress, User } from '../models';
 import { StreakService } from './StreakService';
+import { log } from 'console';
 
 interface CookingSession {
   user: {
@@ -212,8 +213,6 @@ interface CookingSession {
       };
     }>;
   };
-  startTime?: string;
-  endTime?: string;
 }
 
 interface ProgressUpdate {
@@ -250,19 +249,29 @@ export class ProgressTrackingService {
         }, { transaction });
       }
 
+      // Process streak first
+      const streakResult = await this.streakService.processSession(
+        session.user.id,
+        new Date(),
+        transaction
+      );
+      log(`the streak result is ${streakResult}`)
+      totalXpEarned += streakResult.xpEarned;
+      
+
       // Get active badges with their subtasks
       const badges = await Badge.findAll({
         where: { isActive: true },
         include: [BadgeSubtask]
       });
 
-      // Process each badge
+      // Process each badge's subtasks
       for (const badge of badges) {
         const badgeData = badge.get({ plain: true });
-        
+        log(`the bade data is ${user.nickName}`)
         // Process each subtask
         for (const subtask of badgeData.BadgeSubtasks || []) {
-          // Check if the session matches this subtask's requirements
+          // Check if this recipe matches the subtask requirements
           if (this.doesSessionMatchSubtask(session.sessionRecipe, subtask)) {
             let progress = await UserProgress.findOne({
               where: {
@@ -312,17 +321,8 @@ export class ProgressTrackingService {
         }
       }
 
-      // Process streak
-      const streakResult = await this.streakService.processSession(
-        session.user.id,
-        session.endTime ? new Date(session.endTime) : new Date(),
-        transaction
-      );
-
-      // Add streak XP to total
-      totalXpEarned += streakResult.xpEarned;
-
-      // Update user's total XP
+      // Update user's total XP (including streak XP)
+      // const totalSessionXP = totalXpEarned + streakResult.xpEarned;
       if (totalXpEarned > 0) {
         await user.increment('totalXp', {
           by: totalXpEarned,
@@ -332,35 +332,36 @@ export class ProgressTrackingService {
 
       await transaction.commit();
 
-      // Get final user state
-      const updatedUser = await User.findByPk(session.user.id);
+      // Format progress updates for response
+      const formattedUpdates = progressUpdates.map(update => ({
+        badge: update.badgeName,
+        subtask: update.subtaskDescription,
+        progress: `${update.newCount}/${update.requiredCount}`,
+        completed: update.completed,
+        xpEarned: update.xpEarned
+      }));
 
       return {
         sessionSummary: {
           userId: session.user.id,
-          totalXpEarned,
-          updatedUserXp: updatedUser?.get('totalXp') || 0,
-          progressUpdates: progressUpdates.map(update => ({
-            badge: update.badgeName,
-            subtask: update.subtaskDescription,
-            progress: `${update.newCount}/${update.requiredCount}`,
-            completed: update.completed,
-            xpEarned: update.xpEarned
-          }))
+          totalXpEarned: totalXpEarned,
+          updatedUserXp: (user.get('totalXp') as number),
+          progressUpdates: formattedUpdates
         },
         streakProgress: {
-          currentStreak: streakResult.currentStreak,
-          streakFreezes: streakResult.streakFreezes,
           streakXpEarned: streakResult.xpEarned,
           isStreakMaintained: streakResult.isStreakMaintained,
           usedFreeze: streakResult.usedFreeze,
-          longestStreak: streakResult.longestStreak
+          currentStreak: streakResult.currentStreak,
+          streakFreezes: streakResult.streakFreezes,
+          longestStreak: streakResult.longestStreak,
+          dailyTaskCompleted: true
         },
         details: progressUpdates
       };
 
     } catch (error) {
-      if (transaction && !transaction.finished) {
+      if (transaction && !transaction.afterCommit) {
         await transaction.rollback();
       }
       throw error;
@@ -375,39 +376,64 @@ export class ProgressTrackingService {
     }
 
     return rules.every(rule => {
-      try {
-        switch (rule.field) {
-          case 'category':
-            return recipe.Recipe_Categories_Map.some(
-              cat => rule.values?.includes(cat.recipe_category.id)
-            );
+      switch (rule.field) {
+        case 'category':
+          const recipeCategories = recipe.Recipe_Categories_Map?.map(cat => cat.recipe_category.id);
+          return rule.values?.some(id => recipeCategories?.includes(id)) || false;
 
-          case 'meal_type':
-            return recipe.meal_type.some(
-              type => rule.stringValues?.includes(type)
-            );
+        case 'meal_type':
+          return rule.stringValues?.some(type => recipe.meal_type?.includes(type)) || false;
 
-          case 'diet':
-            return recipe.diet.some(
-              diet => rule.stringValues?.includes(diet)
-            );
+        case 'diet':
+          return rule.stringValues?.some(diet => recipe.diet?.includes(diet)) || false;
 
-          case 'cuisine':
-            return recipe.cuisine.some(
-              cuisine => rule.stringValues?.includes(cuisine)
-            );
+        case 'cuisine':
+          return rule.stringValues?.some(cuisine => recipe.cuisine?.includes(cuisine)) || false;
 
-          case 'created_source':
-            return rule.stringValues?.includes(recipe.created_source);
+        case 'created_source':
+          return rule.stringValues?.includes(recipe.created_source) || false;
 
-          default:
-            console.log('Unknown rule field:', rule.field);
-            return false;
-        }
-      } catch (error) {
-        console.error('Error processing rule:', rule, error);
-        return false;
+        default:
+          return false;
       }
+    });
+  }
+
+  async getUserProgress(userId: string) {
+    const badges = await Badge.findAll({
+      where: { isActive: true },
+      include: [{
+        model: BadgeSubtask,
+        include: [{
+          model: UserProgress,
+          where: { userId },
+          required: false
+        }]
+      }]
+    });
+
+    return badges.map(badge => {
+      const badgeData = badge.get({ plain: true });
+      const subtasks = badgeData.BadgeSubtasks.map((subtask: any) => {
+        const progress = subtask.UserProgresses?.[0] || {
+          currentCount: 0,
+          completed: false
+        };
+
+        return {
+          ...subtask,
+          currentCount: progress.currentCount,
+          completed: progress.completed,
+          completedAt: progress.completedAt
+        };
+      });
+
+      return {
+        id: badge.get('id'),
+        name: badge.get('name'),
+        description: badge.get('description'),
+        subtasks
+      };
     });
   }
 }
