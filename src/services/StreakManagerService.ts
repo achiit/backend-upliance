@@ -36,7 +36,8 @@ export class StreakManager {
         // Get all streaks
         const streaks = await UserStreak.findAll({ transaction });
         const now = new Date();
-  
+
+        console.log(`the date is ${now}`)
         for (const streak of streaks) {
           const lastReset = new Date(streak.get('lastDailyReset'));
           const dailyTaskCompleted = streak.get('dailyTaskCompleted');
