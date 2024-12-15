@@ -43,7 +43,8 @@ export class StreakManager {
           const dailyTaskCompleted = streak.get('dailyTaskCompleted');
           const currentStreak = streak.get('currentStreak');
           const streakFreezes = streak.get('streakFreezes');
-  
+
+          console.log(`the daily reset date is ${lastReset}`)
           // Determine if it's a new day
           const isNewDay = !this.isSameDay(lastReset, now);
   
