@@ -7,6 +7,10 @@ class Badge extends Model {
   public description!: string;
   public totalXp!: number;
   public isActive!: boolean;
+  public isSeasoned!: boolean;
+  public imageUrl!: string;
+  public activeFrom?: Date;
+  public activeTill?: Date;
 }
 
 Badge.init({
@@ -29,6 +33,22 @@ Badge.init({
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  isSeasoned: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  activeFrom: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  activeTill: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   sequelize,

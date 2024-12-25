@@ -153,6 +153,10 @@ interface SubtaskInput {
 interface CreateBadgeDTO {
   name: string;
   description: string;
+  imageUrl: string;
+  isSeasoned: boolean;
+  activeFrom: Date;
+  activeTill: Date;
   subtasks: SubtaskInput[];
 }
 
@@ -169,6 +173,10 @@ export class BadgeService {
       const badge = await Badge.create({
         name: badgeData.name,
         description: badgeData.description,
+        imageUrl: badgeData.imageUrl,
+        isSeasoned: badgeData.isSeasoned??false,
+        activeFrom: badgeData.activeFrom??null,
+        activeTill: badgeData.activeTill??null,
         totalXp
       }, { transaction });
 

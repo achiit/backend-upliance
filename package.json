@@ -19,7 +19,7 @@
     "build": "bun build src/index.ts",
     "seed:categories": "bun run src/scripts/seedCategories.ts",
     "seed:users": "bun run src/scripts/seedUsers.ts",
-    "migrate": "bun run src/config/migrations.ts"
+    "migrate": "bun run src/scripts/run-migrations.ts"
   },
   "dependencies": {
     "@types/express": "^5.0.0",

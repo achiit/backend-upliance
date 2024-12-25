@@ -1,27 +1,50 @@
-import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-import { up as createUserStreaks } from '../migrations/20231205-create-user-streaks';
+import { Sequelize, QueryInterface } from 'sequelize';
+import logger from '../utils/logger';
+import * as addBadgeFields from '../config/add-badge-fields';
 
-dotenv.config();
+interface Migration {
+  name: string;
+  up: (queryInterface: QueryInterface) => Promise<void>;
+  down: (queryInterface: QueryInterface) => Promise<void>;
+}
 
-const sequelize = new Sequelize({
-  dialect: 'mysql',
-  host: process.env.DB_HOST || 'localhost',
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'cooking_game'
-});
+const migrations: Migration[] = [
+  addBadgeFields as Migration
+  // Add other migrations here in chronological order
+];
 
-async function runMigrations() {
+export async function runMigrations(sequelize: Sequelize) {
   try {
-    // Only run the user_streaks migration
-    await createUserStreaks(sequelize.getQueryInterface());
-    console.log('Migrations completed successfully');
-    process.exit(0);
+    // First ensure database connection is established
+    await sequelize.authenticate();
+    logger.info('Database connection established successfully');
+
+    const queryInterface = sequelize.getQueryInterface();
+    
+    for (const migration of migrations) {
+      logger.info(`Running migration: ${migration.name}`);
+      await migration.up(queryInterface);
+      logger.info(`Successfully completed migration: ${migration.name}`);
+    }
+    logger.info('All migrations completed successfully');
   } catch (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
+    logger.error('Migration failed:', error);
+    throw error;
   }
 }
 
-runMigrations();
+export async function rollbackMigrations(sequelize: Sequelize) {
+  const queryInterface = sequelize.getQueryInterface();
+  
+  try {
+    for (const migration of migrations.reverse()) {
+      logger.info(`Rolling back migration: ${migration.name}`);
+      await migration.down(queryInterface);
+      logger.info(`Successfully rolled back migration: ${migration.name}`);
+    }
+    logger.info('All migrations rolled back successfully');
+  } catch (error) {
+    logger.error('Migration rollback failed:', error);
+    throw error;
+  }
+}
