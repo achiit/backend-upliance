@@ -3,25 +3,25 @@ import sequelize from '../config/database';
 
 const testUsers = [
   {
-    id: 'user1-uuid',
+    id: '123e4567-e89b-12d3-a456-426614174001', // Static, valid UUID
     nickName: 'Aman',
-    totalXp: 0
+    totalXp: 0,
   },
   {
-    id: 'user2-uuid',
+    id: '123e4567-e89b-12d3-a456-426614174002', // Static, valid UUID
     nickName: 'Sarah',
-    totalXp: 0
+    totalXp: 0,
   },
   {
-    id: 'user3-uuid',
+    id: '123e4567-e89b-12d3-a456-426614174003', // Static, valid UUID
     nickName: 'John',
-    totalXp: 0
+    totalXp: 0,
   },
   {
-    id: 'user4-uuid',
+    id: '123e4567-e89b-12d3-a456-426614174004', // Static, valid UUID
     nickName: 'Emma',
-    totalXp: 0
-  }
+    totalXp: 0,
+  },
 ];
 
 async function seedUsers() {
@@ -33,7 +33,7 @@ async function seedUsers() {
     for (const userData of testUsers) {
       const [user] = await User.findOrCreate({
         where: { id: userData.id },
-        defaults: userData
+        defaults: userData,
       });
       console.log(`User created/found: ${user.get('nickName')}`);
 
@@ -48,8 +48,8 @@ async function seedUsers() {
           freezesLastReset: new Date(),
           longestStreak: 0,
           dailyTaskCompleted: false,
-          lastDailyReset: new Date()
-        }
+          lastDailyReset: new Date(),
+        },
       });
       console.log(`Streak entry created/found for: ${user.get('nickName')}`);
     }
