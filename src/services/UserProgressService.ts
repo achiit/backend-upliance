@@ -169,7 +169,7 @@ export class UserProgressService {
         }),
         Badge.findAll({
           where: { isActive: true },
-          attributes: ['id', 'name', 'description', 'totalXp'],
+          attributes: ['id', 'name', 'description', 'totalXp', 'imageUrl', 'isSeasoned', 'activeFrom', 'activeTill'],
           include: [{
             model: BadgeSubtask,
             attributes: ['id', 'description', 'requiredCount', 'xpPerCompletion', 'requirementRules'],
