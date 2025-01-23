@@ -39,7 +39,7 @@ export class StreakManager {
 
         console.log(`the date is ${now}`)
         for (const streak of streaks) {
-          const lastReset = new Date(streak.get('lastDailyReset'));
+          const lastReset = new Date(streak.get('lastDailyReset') || new Date());
           const dailyTaskCompleted = streak.get('dailyTaskCompleted');
           const currentStreak = streak.get('currentStreak');
           const streakFreezes = streak.get('streakFreezes');
@@ -119,19 +119,52 @@ export class StreakManager {
         throw error;
       }
     }
-  
     private async saveLog(processedStreaks: ProcessedStreak[]) {
       const today = new Date().toISOString().split('T')[0];
       const logFile = path.join(this.logPath, `streak-log-${today}.json`);
-  
+    
       const logData = {
         date: today,
         processedAt: new Date().toISOString(),
         streaks: processedStreaks,
       };
-  
+    
+      // Save to file
       await fs.writeFile(logFile, JSON.stringify(logData, null, 2));
+    
+      // Send to API
+      try {
+        const response = await fetch(
+          'https://gamification-cloudrun-465749848548.asia-south1.run.app/insertLogs',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(logData)
+          }
+        );
+    
+        if (!response.ok) {
+          console.error('Failed to send logs to API:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error sending logs to API:', error);
+        // Don't throw error to prevent blocking file save
+      }
     }
+    // private async saveLog(processedStreaks: ProcessedStreak[]) {
+    //   const today = new Date().toISOString().split('T')[0];
+    //   const logFile = path.join(this.logPath, `streak-log-${today}.json`);
+  
+    //   const logData = {
+    //     date: today,
+    //     processedAt: new Date().toISOString(),
+    //     streaks: processedStreaks,
+    //   };
+  
+    //   await fs.writeFile(logFile, JSON.stringify(logData, null, 2));
+    // }
   
     async getTodayLogs() {
       const today = new Date().toISOString().split('T')[0];
