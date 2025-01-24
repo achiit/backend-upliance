@@ -2,7 +2,7 @@ import BeeQueue from 'bee-queue';
 import { ProgressTrackingService } from '../services/ProgressTrackingService';
 
 // Initialize Bee-Queue
-const cookingSessionQueue = new BeeQueue('cooking-session-queue', {
+export const cookingSessionQueue = new BeeQueue('cooking-session-queue', {
   redis: {
     host: 'redis-17273.c11.us-east-1-2.ec2.redns.redis-cloud.com',
     port: 17273,
@@ -33,3 +33,4 @@ cookingSessionQueue.on('ready', () => {
 });
 
 console.log('→ [cooking-session-queue] Worker is ready to process jobs.');
+
