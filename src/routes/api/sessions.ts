@@ -1,18 +1,24 @@
 import { Router } from 'express';
-import { ProgressTrackingService } from '../../services';
+import { cookingSessionQueue } from '../../workers/cookingSessionQueue';
 
 const router = Router();
-const progressService = new ProgressTrackingService();
 
-router.post('/log', async (req, res, next) => {
+router.post('/log', async (req, res) => {
   try {
-    const result = await progressService.processSession(req.body);
-    res.json({
-      status: 'success',
-      data: result
-    });
+    console.log('→ [POST /api/sessions/log] Request received.');
+
+    // Enqueue the session data.
+    const sessionData = req.body;
+
+    // The "await" here only waits for the job to be enqueued, not for processing.
+    await cookingSessionQueue.add(sessionData);
+    console.log('→ Job enqueued successfully.');
+
+    // Immediately return a 202 Accepted response to the client.
+    return res.status(202).json({ message: 'Session queued for background processing' });
   } catch (error) {
-    next(error);
+    console.error('→ Error adding job to queue:', error);
+    return res.status(500).json({ error: 'Unable to queue session' });
   }
 });
 
