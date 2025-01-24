@@ -11,8 +11,7 @@ router.post('/log', async (req, res) => {
     const sessionData = req.body;
 
     // The "await" here only waits for the job to be enqueued, not for processing.
-    await cookingSessionQueue.add(sessionData);
-    console.log('→ Job enqueued successfully.');
+    await cookingSessionQueue.createJob(sessionData).save();    console.log('→ Job enqueued successfully.');
 
     // Immediately return a 202 Accepted response to the client.
     return res.status(202).json({ message: 'Session queued for background processing' });
